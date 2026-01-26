@@ -1,79 +1,173 @@
 <template>
   <div class="page">
+
     <!-- HERO -->
     <HeroSlider :slides="heroSlides" />
 
-    <!-- TÍTULO -->
-    <h1 class="title">Turismo Santander</h1>
+    <!-- HERO TEXT -->
+    <section class="hero-text">
+      <h1>Descubre Santander</h1>
+      <p>Viaja, explora y vive experiencias inolvidables</p>
+    </section>
 
-    <!-- BUSCADOR -->
+    <!-- DAILY CONTEXT -->
+    <section class="daily-context">
+      <div>
+        <strong>📍 Santander hoy</strong>
+        <p>☀️ 26° · Ideal para planes al aire libre</p>
+      </div>
+      <span class="pulse">EN VIVO</span>
+    </section>
+
+    <!-- VALUE HIGHLIGHTS -->
+    <section class="highlights">
+      <div class="highlight">📍 +50 destinos</div>
+      <div class="highlight">⭐ Referenciados por viajeros</div>
+      <div class="highlight">🤖 Recomendaciones inteligentes</div>
+    </section>
+
+    <!-- SEARCH -->
     <SearchBox
-          :destinations="destinations"
-          @search="handleSearch"
-          @select="goToDestination"
-        />
-      <div v-if="filteredResults.length" class="results-grid">
-          <div
-            v-for="place in filteredResults"
-            :key="place.id"
-            class="result-card"
-            @click="goToDestination(place)"
-          >
-          <button
-            class="favorite"
-            @click.stop="toggleFavorite(place)"
-          >
+      :destinations="destinations"
+      @search="handleSearch"
+      @select="goToDestination"
+    />
+
+    <!-- QUICK ACTIONS -->
+    <section>
+      <h2>¿Qué quieres hacer hoy?</h2>
+      <div class="action-grid">
+        <div class="action">🌟 Sorpréndeme</div>
+        <div class="action">⏱️ Plan rápido</div>
+        <div class="action">📍 Cerca de mí</div>
+        <div class="action">🔥 Tendencias</div>
+      </div>
+    </section>
+
+    <!-- SEARCH RESULTS -->
+    <section v-if="filteredResults.length">
+      <h2>Resultados</h2>
+      <div class="results-grid">
+        <div
+          v-for="place in filteredResults"
+          :key="place.id"
+          class="card"
+          @click="goToDestination(place)"
+        >
+          <button class="favorite" @click.stop="toggleFavorite(place)">
             {{ isFavorite(place.id) ? '❤️' : '🤍' }}
           </button>
-
-            <img :src="place.image" :alt="place.name" />
-            <span>{{ place.name }}</span>
-          </div>
-    </div>
-
-    <!-- CATEGORÍAS -->
-      <section>
-        <h2>Categorías</h2>
-        <div class="categories">
-          <div
-            v-for="cat in categories"
-            :key="cat"
-            class="category"
-            :class="{ active: selectedCategory === cat }"
-            @click="toggleCategory(cat)"
-          >
-            {{ cat }}
-          </div>
+          <img :src="place.image" />
+          <p>{{ place.name }}</p>
         </div>
-      </section>
+      </div>
+    </section>
 
-    <!-- DESTINOS DESTACADOS -->
-      <section>
-        <h2>Destinos destacados</h2>
-        <div class="destinations">
-          <div
-            v-for="dest in destinations"
-            :key="dest.id"
-            class="card"
-            @click="goToDestination(dest)"
-          >
-          <button
-            class="favorite"
-            @click.stop="toggleFavorite(dest)"
-          >
-            {{ isFavorite(dest.id) ? '❤️' : '🤍' }}
-          </button>
-
-            <img :src="dest.image" :alt="dest.name" />
+    <!-- PERSONALIZED -->
+    <section>
+      <h2>✨ Para ti hoy</h2>
+      <div class="horizontal-list">
+        <div
+          v-for="dest in destinations.slice(1,5)"
+          :key="dest.id"
+          class="card premium"
+          @click="goToDestination(dest)"
+        >
+          <img :src="dest.image" />
+          <div class="overlay">
+            <span>Recomendado</span>
             <p>{{ dest.name }}</p>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
+    <!-- STORIES -->
+    <section class="soft-section">
+      <h2>📖 Historias que inspiran</h2>
+      <div class="stories">
+        <div class="story">🌄 Un amanecer inolvidable</div>
+        <div class="story">🍽️ Sabores que enamoran</div>
+        <div class="story">🏛️ Lugares con historia</div>
+      </div>
+    </section>
 
-    <button class="cta" @click="goToExplore">
-      Explorar Santander
-    </button>
+    <!-- TRENDING -->
+    <section>
+      <h2>🔥 En tendencia</h2>
+      <div class="horizontal-list">
+        <div
+          v-for="dest in destinations.slice(2,7)"
+          :key="dest.id"
+          class="card trend"
+          @click="goToDestination(dest)"
+        >
+          <img :src="dest.image" />
+          <p>{{ dest.name }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXPERIENCES -->
+    <section>
+      <h2>Experiencias</h2>
+      <div class="horizontal-list">
+        <div class="experience">🌄 Aventura</div>
+        <div class="experience">🍽️ Gastronomía</div>
+        <div class="experience">🏛️ Cultura</div>
+        <div class="experience">💑 En pareja</div>
+        <div class="experience">👨‍👩‍👧 Familia</div>
+      </div>
+    </section>
+
+    <!-- ZONES -->
+    <section class="soft-section">
+      <h2>Explora por zonas</h2>
+      <div class="zones">
+        <div class="zone">🏙️ Área Metropolitana</div>
+        <div class="zone">🏞️ Provincias</div>
+        <div class="zone">✨ Pueblos mágicos</div>
+      </div>
+    </section>
+
+    <!-- TRUST -->
+    <section>
+      <h2>🏆 ¿Por qué elegirnos?</h2>
+      <div class="trust-grid">
+        <div>👥 +10k viajeros</div>
+        <div>⭐ 4.8 promedio</div>
+        <div>🗺️ Curado por locales</div>
+        <div>💬 Comunidad activa</div>
+      </div>
+    </section>
+
+    <!-- AI TEASER -->
+    <section class="ai-section">
+      <h2>🤖 Tu asistente turístico</h2>
+      <p>Pronto podrás planear tu viaje con ayuda inteligente.</p>
+      <button class="cta soft">Muy pronto</button>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="final-emotion">
+      <h2>Tu próxima experiencia empieza aquí</h2>
+      <p>No solo viajes. Vive Santander.</p>
+      <button class="cta glow" @click="goToExplore">
+        Descubrir ahora
+      </button>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <strong>Turismo Santander</strong>
+      <div class="footer-links">
+        <span @click="go('/favorites')">Favoritos</span>
+        <span @click="go('/explore')">Explorar</span>
+        <span @click="go('/ai')">Asistente AI</span>
+      </div>
+      <small>© 2026 Turismo Santander</small>
+    </footer>
+
   </div>
 </template>
 
@@ -89,207 +183,262 @@ defineOptions({ name: 'HomePage' })
 
 const router = useRouter()
 const searchQuery = ref('')
-const selectedCategory = ref(null)
-
-const goToExplore = () => {
-  router.push({
-    path: '/explore',
-    query: {
-      search: searchQuery.value || undefined,
-      category: selectedCategory.value || undefined
-    }
-  })
-}
 
 const { toggleFavorite, isFavorite } = useFavorites()
 
-const hasFilters = computed(() => {
-  return searchQuery.value || selectedCategory.value
-})
+const go = (path) => router.push(path)
+const goToExplore = () => router.push('/explore')
 
-const goToDestination = (dest) => {
-  searchQuery.value = ''
+const goToDestination = (dest) =>
   router.push(`/destination/${dest.id}`)
-}
 
-const handleSearch = (value) => {
-  searchQuery.value = value.toLowerCase()
-  selectedCategory.value = null
-}
+const handleSearch = (value) =>
+  (searchQuery.value = value.toLowerCase())
 
-const toggleCategory = (cat) => {
-  router.push({
-    path: '/explore',
-    query: { category: cat }
-  })
-}
+const filteredResults = computed(() =>
+  searchQuery.value
+    ? destinations.filter(d =>
+        d.name.toLowerCase().includes(searchQuery.value)
+      )
+    : []
+)
 
-// 🔍 Búsqueda (usa destinations)
-const filteredResults = computed(() => {
-  if (!hasFilters.value) return []
-
-  let results = destinations
-
-  if (searchQuery.value) {
-    results = results.filter(dest =>
-      dest.name.toLowerCase().includes(searchQuery.value)
-    )
-  }
-
-  if (selectedCategory.value) {
-    results = results.filter(dest =>
-      dest.categories.includes(selectedCategory.value)
-    )
-  }
-
-  return results
-})
-
-// 🎞 HeroSlider (primeros 3 destinos)
 const heroSlides = computed(() => destinations.slice(0, 3))
-
-// 🧩 Categorías
-const categories = ['Aventura', 'Gastronomía', 'Cultura', 'Eventos', 'Naturaleza']
 </script>
 
 <style scoped>
-html, body {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
-}
-
 .page {
   padding: 16px;
-  padding-bottom: 40px; /* aumenta el espacio al final */
-  overflow-x: hidden;
+  padding-bottom: 120px;
 }
 
-.title {
+/* HERO */
+.hero-text {
   text-align: center;
-  margin: 16px 0;
+  margin: 24px 0;
 }
 
-.search input {
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
+.hero-text h1 {
+  font-size: 30px;
+}
+
+.hero-text p {
+  color: #666;
+}
+
+/* DAILY */
+.daily-context {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #000, #111);
+  color: #fff;
+  padding: 14px 18px;
+  border-radius: 18px;
   margin-bottom: 24px;
 }
 
-.results {
-  background: white;
-  border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 24px;
-  box-shadow: 0 6px 20px rgba(0,0,0,.08);
+.pulse {
+  font-size: 12px;
+  background: #22c55e;
+  padding: 4px 8px;
+  border-radius: 20px;
+  animation: pulse 1.5s infinite;
 }
 
-.result-item {
-  padding: 10px;
-  border-radius: 8px;
-  cursor: pointer;
+@keyframes pulse {
+  0% { opacity: .6 }
+  50% { opacity: 1 }
+  100% { opacity: .6 }
 }
 
-.result-item:hover {
-  background: #f2f2f2;
-}
-
-.results-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+/* HIGHLIGHTS */
+.highlights {
+  display: flex;
   gap: 12px;
   margin-bottom: 24px;
 }
-.result-card,
+
+.highlight {
+  flex: 1;
+  background: #f7f7f7;
+  border-radius: 14px;
+  padding: 14px;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* ACTIONS */
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.action {
+  background: #000;
+  color: #fff;
+  padding: 18px;
+  border-radius: 18px;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* CARDS */
 .card {
   position: relative;
+  min-width: 160px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,.08);
+}
+
+.card img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 16px 16px 0 0;
+}
+
+.card p {
+  padding: 10px;
+  text-align: center;
 }
 
 .favorite {
   position: absolute;
   top: 8px;
   right: 8px;
-  background: white;
-  border: none;
+  background: #fff;
   border-radius: 50%;
   padding: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  box-shadow: 0 2px 6px rgba(0,0,0,.2);
-  z-index: 2;
+  border: none;
 }
 
-.result-card {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 6px 20px rgba(0,0,0,.08);
-  cursor: pointer;
+/* PREMIUM */
+.card.premium img {
+  height: 160px;
 }
 
-.result-card img {
-  width: 100%;
-  height: 100px;
-  object-fit: cover;
-}
-
-.result-card span {
-  display: block;
-  padding: 10px;
-  font-weight: 500;
-  text-align: center;
-}
-.category {
-  min-width: 120px;
-  padding: 16px;
-  background: #f2f2f2;
-  border-radius: 12px;
-  text-align: center;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.category.active {
-  background: #000;
+.card.premium .overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.7), transparent);
   color: #fff;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
 }
 
-.categories,
-.destinations {
+/* LISTS */
+.horizontal-list {
   display: flex;
   gap: 12px;
   overflow-x: auto;
-  margin-bottom: 16px;
 }
 
-.category,
-.card {
-  min-width: 120px;
+/* STORIES */
+.soft-section {
+  background: #fafafa;
   padding: 16px;
+  border-radius: 16px;
+}
+
+.stories {
+  display: flex;
+  gap: 12px;
+}
+
+.story {
+  flex: 1;
+  background: #000;
+  color: #fff;
+  padding: 24px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+/* EXPERIENCES */
+.experience {
+  padding: 12px 18px;
   background: #f2f2f2;
-  border-radius: 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+/* ZONES */
+.zones {
+  display: flex;
+  gap: 12px;
+}
+
+.zone {
+  flex: 1;
+  padding: 18px;
+  background: linear-gradient(135deg, #f2f2f2, #eaeaea);
+  border-radius: 18px;
   text-align: center;
 }
 
-.card img {
-  width: 100%;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 8px;
-  margin-bottom: 8px;
+/* TRUST */
+.trust-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.trust-grid div {
+  background: #f4f4f4;
+  padding: 16px;
+  border-radius: 16px;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* AI */
+.ai-section {
+  text-align: center;
+  padding: 24px;
+  background: radial-gradient(circle, #111, #000);
+  color: #fff;
+  border-radius: 20px;
+}
+
+/* CTA */
+.final-emotion {
+  text-align: center;
+  padding: 40px 20px;
 }
 
 .cta {
   width: 100%;
-  padding: 14px;
-  border: none;
+  padding: 16px;
+  border-radius: 14px;
   background: #000;
   color: #fff;
-  border-radius: 12px;
+  border: none;
   font-size: 16px;
-  margin-bottom: 24px; /* Agregado: separa el botón del borde inferior */
-  cursor: pointer;
+}
+
+.cta.glow {
+  box-shadow: 0 0 20px rgba(0,0,0,.4);
+}
+
+/* FOOTER */
+.footer {
+  margin-top: 40px;
+  padding: 24px;
+  background: #000;
+  color: #fff;
+  border-radius: 20px 20px 0 0;
+  text-align: center;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin: 12px 0;
 }
 </style>
