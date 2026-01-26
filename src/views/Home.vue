@@ -70,8 +70,10 @@
         </div>
       </section>
 
-    <!-- CTA -->
-    <button class="cta">Explorar Santander</button>
+
+    <button class="cta" @click="goToExplore">
+      Explorar Santander
+    </button>
   </div>
 </template>
 
@@ -88,6 +90,16 @@ defineOptions({ name: 'HomePage' })
 const router = useRouter()
 const searchQuery = ref('')
 const selectedCategory = ref(null)
+
+const goToExplore = () => {
+  router.push({
+    path: '/explore',
+    query: {
+      search: searchQuery.value || undefined,
+      category: selectedCategory.value || undefined
+    }
+  })
+}
 
 const { toggleFavorite, isFavorite } = useFavorites()
 
@@ -106,8 +118,10 @@ const handleSearch = (value) => {
 }
 
 const toggleCategory = (cat) => {
-  selectedCategory.value =
-    selectedCategory.value === cat ? null : cat
+  router.push({
+    path: '/explore',
+    query: { category: cat }
+  })
 }
 
 // 🔍 Búsqueda (usa destinations)
