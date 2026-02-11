@@ -7,6 +7,7 @@ import Favorites from '@/views/Favorites.vue'
 import More from '@/views/More.vue'
 import Emergencies from '@/views/Emergencies.vue'
 import DestinationDetail from '@/views/DestinationDetail.vue'
+import MunicipioDetail from '@/views/MunicipioDetail.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -17,7 +18,8 @@ const router = createRouter({
     { path: '/favorites', name: 'favorites', component: Favorites },
     { path: '/more', name: 'more', component: More },
     { path: '/emergencies', name: 'emergencies', component: Emergencies },
-    { path: '/destination/:id', name: 'destination', component: DestinationDetail },
+    { path: '/explore/:municipioSlug', name: 'MunicipioDetail', component: MunicipioDetail },
+    { path: '/explore/:municipioSlug/:destinoSlug', name: 'DestinationDetail', component: DestinationDetail },
   ],
 })
 

@@ -7,30 +7,57 @@ const favorites = ref(
 export function useFavorites() {
 
   const toggleFavorite = (dest) => {
-    const index = favorites.value.findIndex(f => f.id === dest.id)
-
-    if (index === -1) {
-      favorites.value.push(dest)
-    } else {
-      favorites.value.splice(index, 1)
+    /* ======================
+       VALIDACIONES
+    ====================== */
+    if (!dest?.slug || !dest?.name) {
+      console.error('❌ Destino inválido:', dest)
+      return
     }
-  }
 
-  const isFavorite = (id) => {
-    return favorites.value.some(f => f.id === id)
+    if (!dest?.municipio?.slug) {
+      console.error('❌ Destino sin municipio:', dest)
+      return
+    }
+
+    /* ======================
+       EXISTE?
+    ====================== */
+    const index = favorites.value.findIndex(
+      f => f.slug === dest.slug
+    )
+
+    if (index !== -1) {
+      favorites.value.splice(index, 1)
+      return
+    }
+
+    /* ======================
+       GUARDAR SOLO LO NECESARIO
+    ====================== */
+    favorites.value.push({
+      id: dest.id,
+      name: dest.name,
+      slug: dest.slug,
+      image: dest.image,
+      categories: dest.categories || [],
+      municipio: {
+        slug: dest.municipio.slug,
+        name: dest.municipio.name
+      }
+    })
   }
 
   watch(
     favorites,
-    (newVal) => {
-      localStorage.setItem('favorites', JSON.stringify(newVal))
+    (val) => {
+      localStorage.setItem('favorites', JSON.stringify(val))
     },
     { deep: true }
   )
 
   return {
     favorites,
-    toggleFavorite,
-    isFavorite
+    toggleFavorite
   }
 }

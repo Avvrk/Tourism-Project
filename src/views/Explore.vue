@@ -52,9 +52,9 @@
       <div class="trending">
         <div
           v-for="item in trending"
-          :key="item.id"
+          :key="item.slug"
           class="trend-card"
-          @click="goTo(`/destination/${item.id}`)"
+          @click="goToMunicipio(item)"
         >
           <img :src="item.image" />
           <div class="trend-info">
@@ -65,37 +65,30 @@
       </div>
     </section>
 
-    <!-- CATEGORIES -->
+    <!-- Provincias  -->
     <section class="block">
-      <h2>Categorías</h2>
+      <h2>Provincias</h2>
       <div class="categories">
         <button
-          v-for="cat in categories"
-          :key="cat"
-          :class="{ active: selectedCategory === cat }"
-          @click="toggleCategory(cat)"
+          v-for="prov in provinces"
+          :key="prov"
+          :class="{ active: selectedProvince === prov }"
+          @click="toggleProvince(prov)"
         >
-          {{ cat }}
+          {{ prov }}
         </button>
       </div>
     </section>
 
     <!-- GRID -->
     <section class="block">
-      <div v-if="filteredDestinations.length" class="grid">
-        <div
-          v-for="dest in filteredDestinations"
-          :key="dest.id"
-          class="card"
-          @click="goTo(`/destination/${dest.id}`)"
-        >
-          <img :src="dest.image" />
-          <div class="card-body">
-            <p class="name">{{ dest.name }}</p>
-            <span class="tag">{{ dest.categories[0] }}</span>
-          </div>
-        </div>
-      </div>
+      <MunicipioList
+        v-if="filteredMunicipios.length"
+        :municipios="filteredMunicipios"
+        :loading="loading"
+        variant="grid"
+        @select="goToMunicipio"
+      />
 
       <div v-else class="empty">
         <p>No encontramos resultados</p>
@@ -115,21 +108,73 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { destinations } from '@/data/destinations'
+import MunicipioList from '@/components/MunicipioList.vue'
+import { onMounted } from 'vue'
+import { getMunicipios } from '@/services/municipiosService'
 
 defineOptions({ name: 'ExplorePage' })
+
+const municipios = ref([])
+const loading = ref(true)
+
+const loadMunicipios = async () => {
+  loading.value = true
+  try {
+    municipios.value = (await getMunicipios()).map(m => ({
+      ...m
+    }))
+  } catch (e) {
+    console.error(e)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(loadMunicipios)
+
+const filteredMunicipios = computed(() => {
+  let results = municipios.value
+
+  if (searchQuery.value) {
+    results = results.filter(m =>
+      m.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+    )
+  }
+
+  if (selectedProvince.value) {
+    results = results.filter(
+      m => m.province === selectedProvince.value
+    )
+  }
+
+  return results
+})
 
 const router = useRouter()
 
 const searchQuery = ref('')
-const selectedCategory = ref(null)
+const selectedProvince = ref(null)
 
-const categories = [
-  'Aventura',
-  'Naturaleza',
-  'Gastronomía',
-  'Cultura',
-  'Eventos'
+const goToMunicipio = (municipio) => {
+  router.push({
+    name: 'MunicipioDetail',
+    params: {
+      municipioSlug: municipio.slug
+    }
+  })
+}
+
+const trending = computed(() => municipios.value.slice(0, 5))
+
+const provinces = [
+  'Área Metropolitana de Bucaramanga',
+  'Soto Norte',
+  'Soto',
+  'Guanentá',
+  'Comunera',
+  'Vélez',
+  'García Rovira',
+  'Yariguíes'
 ]
 
 const moods = [
@@ -139,30 +184,11 @@ const moods = [
   { label: 'Familiar', icon: '👨‍👩‍👧', route: '/mood/family' }
 ]
 
-const trending = destinations.slice(0, 5)
 
-const toggleCategory = (cat) => {
-  selectedCategory.value =
-    selectedCategory.value === cat ? null : cat
+const toggleProvince = (prov) => {
+  selectedProvince.value =
+    selectedProvince.value === prov ? null : prov
 }
-
-const filteredDestinations = computed(() => {
-  let results = destinations
-
-  if (searchQuery.value) {
-    results = results.filter(d =>
-      d.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-    )
-  }
-
-  if (selectedCategory.value) {
-    results = results.filter(d =>
-      d.categories.includes(selectedCategory.value)
-    )
-  }
-
-  return results
-})
 
 const goTo = (path) => router.push(path)
 const goBack = () => router.back()
@@ -315,36 +341,6 @@ const goBack = () => router.back()
 .categories button.active {
   background: #000;
   color: white;
-}
-
-/* GRID */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
-}
-
-.card {
-  background: white;
-  border-radius: 18px;
-  overflow: hidden;
-}
-
-.card img {
-  width: 100%;
-  height: 130px;
-  object-fit: cover;
-}
-
-.card-body {
-  padding: 12px;
-}
-
-.tag {
-  font-size: 12px;
-  background: #eee;
-  padding: 4px 8px;
-  border-radius: 12px;
 }
 
 /* CTA */

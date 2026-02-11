@@ -29,7 +29,7 @@
     <section v-if="favorites.length" class="controls">
       <input
         v-model="search"
-        placeholder="Buscar destino..."
+        placeholder="Buscar favorito..."
       />
 
       <select v-model="category">
@@ -47,10 +47,6 @@
         <option value="az">A – Z</option>
         <option value="za">Z – A</option>
       </select>
-
-      <button class="view-toggle" @click="grid = !grid">
-        {{ grid ? '📄' : '🔲' }}
-      </button>
     </section>
 
     <!-- EMPTY -->
@@ -60,34 +56,15 @@
     </section>
 
     <!-- FAVORITES -->
-    <section
-      v-else
-      :class="grid ? 'grid' : 'list'"
-    >
-      <article
-        v-for="dest in filteredFavorites"
-        :key="dest.id"
-        class="card"
-        @click="goToDestination(dest)"
-      >
-        <img :src="dest.image" />
-
-        <button
-          class="favorite"
-          @click.stop="toggleFavorite(dest)"
-        >
-          ❤️
-        </button>
-
-        <div class="info">
-          <h3>{{ dest.name }}</h3>
-          <small>📍 {{ dest.municipio || 'Santander' }}</small>
-
-          <span class="badge">
-            {{ dest.category || 'Destino' }}
-          </span>
-        </div>
-      </article>
+    <section v-else class="favorites-list">
+      <DestinationList
+        :destinations="filteredFavorites"
+        :variant="grid ? 'grid' : 'list'"
+        card-variant="default"
+        show-favorite
+        @toggle-favorite="toggleFavorite"
+        @select="goToFavorite"
+      />
     </section>
 
     <!-- CLEAR -->
@@ -106,6 +83,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFavorites } from '@/composables/useFavorites'
+import DestinationList from '@/components/DestinationList.vue'
 
 defineOptions({ name: 'FavoritesPage' })
 
@@ -117,43 +95,65 @@ const order = ref('az')
 const category = ref('')
 const grid = ref(true)
 
+/* ======================
+   CATEGORIES (solo destinos)
+====================== */
 const categories = computed(() => {
-  return [...new Set(
-    favorites.value
-      .map(f => f.category)
-      .filter(Boolean)
-  )]
+  return [
+    ...new Set(
+      favorites.value
+        .flatMap(f => f.categories || [])
+        .filter(Boolean)
+    )
+  ]
 })
 
+/* ======================
+   ORDER
+====================== */
 const orderedFavorites = computed(() => {
   const sorted = [...favorites.value].sort((a, b) =>
-    a.name.localeCompare(b.name)
+    (a.name ?? '').localeCompare(b.name ?? '')
   )
   return order.value === 'az' ? sorted : sorted.reverse()
 })
 
+/* ======================
+   FILTER
+====================== */
 const filteredFavorites = computed(() =>
-  orderedFavorites.value.filter(dest => {
-    const matchName = dest.name
+  orderedFavorites.value.filter(item => {
+    const matchName = (item.name ?? '')
       .toLowerCase()
       .includes(search.value.toLowerCase())
 
     const matchCategory = category.value
-      ? dest.category === category.value
+      ? item.categories?.includes(category.value)
       : true
 
     return matchName && matchCategory
   })
 )
 
+
+const goToFavorite = (item) => {
+  router.push({
+    name: 'DestinationDetail',
+    params: {
+      municipioSlug: item.municipio.slug,
+      destinoSlug: item.slug
+    }
+  })
+}
+
+
+/* ======================
+   ACTIONS
+====================== */
 const clearFavorites = () => {
   if (confirm('¿Eliminar todos los favoritos?')) {
     favorites.value = []
   }
-}
-
-const goToDestination = (dest) => {
-  router.push(`/destination/${dest.id}`)
 }
 
 const goBack = () => router.back()
@@ -177,6 +177,7 @@ const goBack = () => router.back()
   border: none;
   color: white;
   font-size: 20px;
+  cursor: pointer;
 }
 
 .hero-content {
@@ -216,88 +217,16 @@ const goBack = () => router.back()
 }
 
 .controls input,
-.controls select,
-.view-toggle {
+.controls select {
   padding: 10px;
   border-radius: 14px;
   border: 1px solid #ddd;
   flex: 1;
 }
 
-.view-toggle {
-  flex: 0;
-}
-
-/* GRID */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+/* LIST */
+.favorites-list {
   padding: 16px;
-}
-
-.list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 16px;
-}
-
-/* CARD */
-.card {
-  position: relative;
-  background: white;
-  border-radius: 18px;
-  overflow: hidden;
-  box-shadow: 0 12px 30px rgba(0,0,0,.12);
-  transition: transform .2s ease;
-}
-
-.card:hover {
-  transform: translateY(-4px);
-}
-
-.card img {
-  width: 100%;
-  height: 150px;
-  object-fit: cover;
-}
-
-/* INFO */
-.info {
-  padding: 12px;
-}
-
-.info h3 {
-  margin: 0;
-}
-
-.info small {
-  display: block;
-  color: #666;
-}
-
-.badge {
-  display: inline-block;
-  margin-top: 6px;
-  background: #000;
-  color: white;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-}
-
-/* FAVORITE */
-.favorite {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: white;
-  border: none;
-  border-radius: 50%;
-  padding: 8px;
-  font-size: 18px;
-  box-shadow: 0 4px 12px rgba(0,0,0,.25);
 }
 
 /* EMPTY */
@@ -316,5 +245,6 @@ const goBack = () => router.back()
   background: #ffecec;
   border: none;
   font-size: 16px;
+  cursor: pointer;
 }
 </style>

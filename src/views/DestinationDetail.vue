@@ -1,79 +1,48 @@
 <template>
   <div class="page" v-if="destination">
+
     <!-- HEADER -->
     <div class="header">
       <button class="back" @click="goBack">← Volver</button>
-      <button class="favorite" @click="toggleFavorite(destination)">
-        {{ isFav ? '❤️' : '🤍' }}
-      </button>
     </div>
 
     <!-- HERO -->
     <section class="hero">
-      <img :src="destination.image" :alt="destination.name" />
+      <img v-if="destination.image" :src="destination.image" :alt="destination.name" />
       <div class="hero-overlay">
         <h1>{{ destination.name }}</h1>
-        <p>{{ destination.location.city }}, {{ destination.location.department }}</p>
+        <p v-if="destination.municipio">
+          {{ destination.municipio.name }}
+        </p>
       </div>
     </section>
 
     <!-- TAGS -->
-    <div class="tags">
-      <span v-for="tag in destination.categories" :key="tag" class="tag">
-        {{ tag }}
+    <div class="tags" v-if="destination.categories?.length">
+      <span
+        v-for="cat in destination.categories"
+        :key="cat"
+        class="tag"
+      >
+        {{ cat }}
       </span>
     </div>
 
-    <!-- ESENCIA -->
-    <section class="section essence">
-      <h2>🌿 La esencia del destino</h2>
+    <!-- DESCRIPCIÓN -->
+    <section class="section">
+      <h2>📍 Sobre este destino</h2>
       <p>{{ destination.description }}</p>
     </section>
 
-    <!-- HIGHLIGHTS -->
-    <section class="highlights">
-      <div class="highlight">
-        🌤️
-        <strong>Clima</strong>
-        <span>{{ destination.climate.type }}</span>
-      </div>
-      <div class="highlight">
-        📅
-        <strong>Mejor época</strong>
-        <span>{{ destination.climate.bestSeason }}</span>
-      </div>
-      <div class="highlight">
-        🎯
-        <strong>Imperdible</strong>
-        <span>{{ destination.activities[0] }}</span>
-      </div>
-    </section>
-
-    <!-- HISTORIA -->
-    <section class="section">
-      <h2>📖 Historia y raíces</h2>
-      <p>{{ destination.history }}</p>
-    </section>
-
-    <!-- ACTIVIDADES -->
-    <section class="section">
-      <h2>🎒 Qué puedes hacer</h2>
-      <ul class="list">
-        <li v-for="act in destination.activities" :key="act">✨ {{ act }}</li>
-      </ul>
-    </section>
-
-    <!-- GASTRONOMÍA -->
-    <section class="section">
-      <h2>🍽️ Sabores locales</h2>
-      <ul class="list">
-        <li v-for="food in destination.gastronomy" :key="food">🍴 {{ food }}</li>
-      </ul>
+    <!-- DIFICULTAD -->
+    <section class="section" v-if="destination.difficulty">
+      <h3>Dificultad</h3>
+      <p>{{ destination.difficulty }}</p>
     </section>
 
     <!-- GALERÍA -->
-    <section v-if="gallery.length" class="section">
-      <h2>📸 Momentos del lugar</h2>
+    <section class="section" v-if="gallery.length">
+      <h2>📸 Galería</h2>
       <div class="gallery">
         <img
           v-for="(img, i) in gallery"
@@ -85,98 +54,68 @@
     </section>
 
     <!-- MAPA -->
-    <section class="section map-section" v-if="destination.location.lat">
-      <h2>🗺️ Dónde está este lugar</h2>
+    <section
+      class="section"
+      v-if="destination.latitude && destination.longitude"
+    >
+      <h2>🗺️ Ubicación</h2>
       <DestinationMap
-        :lat="destination.location.lat"
-        :lng="destination.location.lng"
+        :lat="destination.latitude"
+        :lng="destination.longitude"
         :name="destination.name"
       />
     </section>
 
-    <!-- SERVICIOS -->
-    <section v-if="destination.services?.length" class="section">
-      <h2>🏨 Servicios turísticos</h2>
-      <div class="services-grid">
-        <div
-          v-for="service in destination.services"
-          :key="service.id"
-          class="service-card"
-        >
-          <h3>{{ service.name }}</h3>
-          <p>{{ service.description }}</p>
-
-          <div class="service-actions">
-            <a
-              v-if="service.whatsapp"
-              :href="`https://wa.me/${service.whatsapp}`"
-              target="_blank"
-            >💬 WhatsApp</a>
-
-            <a
-              v-if="service.website"
-              :href="service.website"
-              target="_blank"
-            >🌐 Web</a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- CTA -->
-    <section class="cta-section">
-      <h2>✨ ¿Listo para vivir este destino?</h2>
-      <button class="cta">Planear mi viaje 🤖</button>
-    </section>
-
-    <!-- IMAGE MODAL -->
+    <!-- MODAL -->
     <div v-if="showImage" class="image-modal" @click.self="closeImage">
       <img :src="activeImage" />
       <button class="close" @click="closeImage">✕</button>
     </div>
   </div>
+
+  <div v-else class="loading">
+    Cargando destino...
+  </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { destinations } from '@/data/destinations'
-import { useFavorites } from '@/composables/useFavorites'
+import { getDestinoBySlug } from '@/services/destinosService'
 import DestinationMap from '@/components/DestinationMap.vue'
 
 defineOptions({ name: 'DestinationDetail' })
 
 const route = useRoute()
 const router = useRouter()
-const { toggleFavorite, isFavorite } = useFavorites()
 
+const destination = ref(null)
 const showImage = ref(false)
 const activeIndex = ref(0)
 
-const destination = computed(() =>
-  destinations.find(d => String(d.id) === String(route.params.id))
-)
+onMounted(async () => {
+  try {
+    destination.value = await getDestinoBySlug(route.params.destinoSlug)
+  } catch (err) {
+    console.error('Error cargando destino:', err)
+  }
+})
 
-const gallery = computed(() => destination.value?.gallery ?? [])
+const gallery = computed(() => destination.value?.gallery || [])
 const activeImage = computed(() => gallery.value[activeIndex.value])
-
-const isFav = computed(() =>
-  destination.value ? isFavorite(destination.value.id) : false
-)
 
 const openImage = (i) => {
   activeIndex.value = i
   showImage.value = true
-  document.body.style.overflow = 'hidden'
 }
 
 const closeImage = () => {
   showImage.value = false
-  document.body.style.overflow = ''
 }
 
 const goBack = () => router.back()
 </script>
+
 <style scoped>
 .page {
   padding-bottom: 90px;

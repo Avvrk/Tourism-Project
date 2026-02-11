@@ -28,7 +28,7 @@
 
     <!-- SEARCH -->
     <SearchBox
-      :destinations="destinations"
+      :destinations="destinos"
       @search="handleSearch"
       @select="goToDestination"
     />
@@ -68,7 +68,7 @@
       <h2>✨ Para ti hoy</h2>
       <div class="horizontal-list">
         <div
-          v-for="dest in destinations.slice(1,5)"
+          v-for="dest in destinos.slice(1,5)"
           :key="dest.id"
           class="card premium"
           @click="goToDestination(dest)"
@@ -91,13 +91,13 @@
         <div class="story">🏛️ Lugares con historia</div>
       </div>
     </section>
-
+    
     <!-- TRENDING -->
     <section>
       <h2>🔥 En tendencia</h2>
       <div class="horizontal-list">
         <div
-          v-for="dest in destinations.slice(2,7)"
+          v-for="dest in destinos.slice(2,7)"
           :key="dest.id"
           class="card trend"
           @click="goToDestination(dest)"
@@ -172,38 +172,67 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+
 import HeroSlider from '@/components/HeroSlider.vue'
 import SearchBox from '@/components/SearchBox.vue'
-import { destinations } from '@/data/destinations'
 import { useFavorites } from '@/composables/useFavorites'
+
+import { getMunicipios } from '@/services/municipiosService'
+import { getDestinos } from '@/services/destinosService'
 
 defineOptions({ name: 'HomePage' })
 
 const router = useRouter()
-const searchQuery = ref('')
-
 const { toggleFavorite, isFavorite } = useFavorites()
 
+/* STATE */
+const municipios = ref([])
+const destinos = ref([])
+const searchQuery = ref('')
+const loading = ref(true)
+
+/* NAV */
 const go = (path) => router.push(path)
 const goToExplore = () => router.push('/explore')
 
-const goToDestination = (dest) =>
-  router.push(`/destination/${dest.id}`)
+const goToDestination = (dest) => {
+  router.push(
+    `/explore/${dest.municipio.slug}/${dest.slug}`
+  )
+}
 
-const handleSearch = (value) =>
-  (searchQuery.value = value.toLowerCase())
+/* SEARCH */
+const handleSearch = (value) => {
+  searchQuery.value = value.toLowerCase()
+}
 
-const filteredResults = computed(() =>
-  searchQuery.value
-    ? destinations.filter(d =>
-        d.name.toLowerCase().includes(searchQuery.value)
-      )
-    : []
+const filteredResults = computed(() => {
+  if (!searchQuery.value) return []
+  return destinos.value.filter(d =>
+    d.name.toLowerCase().includes(searchQuery.value)
+  )
+})
+
+/* HERO */
+const heroSlides = computed(() =>
+  destinos.value.slice(0, 3)
 )
 
-const heroSlides = computed(() => destinations.slice(0, 3))
+/* FETCH */
+onMounted(async () => {
+  try {
+    municipios.value = await getMunicipios()
+    destinos.value = await getDestinos({
+      withMunicipio: true
+    })
+  } catch (e) {
+    console.error('Error cargando home:', e)
+  } finally {
+    loading.value = false
+  }
+})
 </script>
 
 <style scoped>
