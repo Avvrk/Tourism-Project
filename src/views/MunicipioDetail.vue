@@ -20,6 +20,51 @@
       <p>{{ municipio.description }}</p>
     </section>
 
+    <!-- GASTRONOMÍA -->
+    <section v-if="gastronomia.length" class="gastronomia">
+      <div class="section-header">
+        <h2>Gastronomía</h2>
+        <p class="section-sub" v-if="gastronomiaDisclaimer">
+          {{ gastronomiaDisclaimer }}
+        </p>
+      </div>
+
+      <div class="dish-grid">
+        <article
+          v-for="p in gastronomia"
+          :key="p.id || p.slug"
+          class="dish-card"
+        >
+          <div class="dish-media" v-if="p.image_url">
+            <img :src="p.image_url" :alt="p.name" loading="lazy" />
+          </div>
+          <div class="dish-media placeholder" v-else aria-hidden="true">
+            🍽️
+          </div>
+
+          <div class="dish-body">
+            <div class="dish-top">
+              <h3 class="dish-title">{{ p.name }}</h3>
+              <span v-if="p.is_typical" class="badge">Típico</span>
+            </div>
+
+            <p v-if="p.description" class="dish-desc">{{ p.description }}</p>
+            <!-- <p v-if="p.note" class="dish-note">{{ p.note }}</p> -->
+
+            <div v-if="p.tags?.length" class="chips">
+              <span
+                v-for="t in p.tags"
+                :key="t"
+                class="chip"
+              >
+                {{ prettyTag(t) }}
+              </span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
     <!-- FILTROS -->
     <section v-if="categories.length" class="filters">
       <button
@@ -71,6 +116,13 @@ const destinos = ref([])
 const selectedCategory = ref(null)
 const loading = ref(true)
 
+// Tags llegan como text[]; esto los hace más presentables
+const prettyTag = (tag) => {
+  if (!tag) return ''
+  const cleaned = String(tag).replace(/_/g, ' ').trim()
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1)
+}
+
 /* 👉 NAVEGACIÓN AL DESTINO (CORREGIDA) */
 const goToDestination = (destino) => {
   router.push({
@@ -97,6 +149,35 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+})
+
+/* GASTRONOMÍA (municipio_platos -> platos) */
+const gastronomia = computed(() => {
+  const rel = municipio.value?.municipio_platos || []
+  return rel
+    .slice()
+    .sort((a, b) => (a?.sort_order ?? 0) - (b?.sort_order ?? 0))
+    .map((r) => ({
+      ...(r?.platos || {}),
+      is_typical: !!r?.is_typical,
+      note: r?.note || null,
+      sort_order: r?.sort_order ?? 0
+    }))
+})
+
+// Si hay mezcla de típicos vs. referencia regional, mostramos un aviso pequeño.
+const gastronomiaDisclaimer = computed(() => {
+  const items = gastronomia.value
+  if (!items.length) return ''
+  const hasTypical = items.some(i => i.is_typical)
+  const hasRegional = items.some(i => !i.is_typical)
+  if (hasTypical && hasRegional) {
+    return 'Algunos platos están marcados como “Típico” (mencionados específicamente para este municipio). Los demás son referencia regional.'
+  }
+  if (hasRegional && !hasTypical) {
+    return 'Listado basado en referencia regional (Santander).'
+  }
+  return ''
 })
 
 /* CATEGORÍAS */
@@ -166,6 +247,123 @@ const filteredDestinos = computed(() => {
   max-width: 800px;
   line-height: 1.6;
   font-size: 1rem;
+}
+
+/* SECCIONES */
+.section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.section-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.section-sub {
+  margin: 0;
+  font-size: 0.92rem;
+  opacity: 0.75;
+  max-width: 900px;
+  line-height: 1.4;
+}
+
+/* GASTRONOMÍA */
+.gastronomia {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.dish-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.dish-card {
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 16px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 10px 24px rgba(0,0,0,.06);
+}
+
+.dish-media {
+  height: 140px;
+  background: #f3f3f3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+}
+
+.dish-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dish-media.placeholder {
+  color: rgba(0,0,0,.55);
+}
+
+.dish-body {
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dish-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.dish-title {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.badge {
+  flex: 0 0 auto;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.06);
+  border: 1px solid rgba(0,0,0,.10);
+}
+
+.dish-desc {
+  margin: 0;
+  font-size: 0.92rem;
+  opacity: 0.85;
+  line-height: 1.35;
+}
+
+/* .dish-note {
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.72;
+  line-height: 1.35;
+} */
+
+.chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.10);
+  background: rgba(0,0,0,.03);
 }
 
 /* FILTROS */
