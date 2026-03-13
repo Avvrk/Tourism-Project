@@ -1,5 +1,3 @@
-BottomNav.vue — NIVEL BRUTAL
-✅ TEMPLATE
 <template>
   <!-- EMERGENCY FLOATING BUTTON -->
   <RouterLink

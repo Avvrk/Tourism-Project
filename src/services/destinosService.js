@@ -25,7 +25,14 @@ export const getDestinos = async () => {
 export const getDestinosByMunicipio = async (municipioId) => {
   const { data, error } = await supabase
     .from('destinos')
-    .select('*')
+    .select(`
+      *,
+      municipio:municipio_id (
+        id,
+        name,
+        slug
+      )
+    `)
     .eq('municipio_id', municipioId)
 
   if (error) throw error

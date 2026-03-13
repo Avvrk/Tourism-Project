@@ -14,10 +14,10 @@
 
     <!-- QUICK ACTIONS -->
     <section class="quick-actions">
-      <button class="qa" @click="goTo('/map')">🗺️<span>Mapa</span></button>
-      <button class="qa" @click="goTo('/experiences')">🎒<span>Experiencias</span></button>
-      <button class="qa" @click="goTo('/top')">🔥<span>Top</span></button>
-      <button class="qa" @click="goTo('/events')">🎉<span>Eventos</span></button>
+      <button class="qa" @click="comingSoon('Mapa')">🗺️<span>Mapa</span></button>
+      <button class="qa" @click="comingSoon('Experiencias')">🎒<span>Experiencias</span></button>
+      <button class="qa" @click="comingSoon('Top')">🔥<span>Top</span></button>
+      <button class="qa" @click="comingSoon('Eventos')">🎉<span>Eventos</span></button>
     </section>
 
     <!-- SEARCH -->
@@ -192,6 +192,11 @@ const toggleProvince = (prov) => {
 
 const goTo = (path) => router.push(path)
 const goBack = () => router.back()
+
+const comingSoon = (feature) => {
+  // MVP: no abrimos rutas fantasma
+  alert(`${feature}: más adelante. Primero hagamos que lo básico funcione bien 😄`)
+}
 </script>
 
 <style scoped>

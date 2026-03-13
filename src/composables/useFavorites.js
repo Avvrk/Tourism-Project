@@ -6,6 +6,17 @@ const favorites = ref(
 
 export function useFavorites() {
 
+  // ✅ Soporta: slug, id o el objeto destino
+  const isFavorite = (idOrSlugOrDest) => {
+    const id = typeof idOrSlugOrDest === 'object' ? idOrSlugOrDest?.id : idOrSlugOrDest
+    const slug = typeof idOrSlugOrDest === 'object' ? idOrSlugOrDest?.slug : idOrSlugOrDest
+
+    return favorites.value.some(f =>
+      (slug && f.slug === slug) ||
+      (id != null && f.id === id)
+    )
+  }
+
   const toggleFavorite = (dest) => {
     /* ======================
        VALIDACIONES
@@ -15,8 +26,11 @@ export function useFavorites() {
       return
     }
 
-    if (!dest?.municipio?.slug) {
-      console.error('❌ Destino sin municipio:', dest)
+    const municipioSlug = dest?.municipio?.slug || dest?.municipioSlug || dest?.municipio_slug
+    const municipioName = dest?.municipio?.name || dest?.municipioName || dest?.municipio_name
+
+    if (!municipioSlug) {
+      console.error('❌ Destino sin municipio (slug):', dest)
       return
     }
 
@@ -42,8 +56,8 @@ export function useFavorites() {
       image: dest.image,
       categories: dest.categories || [],
       municipio: {
-        slug: dest.municipio.slug,
-        name: dest.municipio.name
+        slug: municipioSlug,
+        name: municipioName || ''
       }
     })
   }
@@ -58,6 +72,7 @@ export function useFavorites() {
 
   return {
     favorites,
-    toggleFavorite
+    toggleFavorite,
+    isFavorite
   }
 }

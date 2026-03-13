@@ -9,6 +9,14 @@
     <!-- HERO -->
     <section class="hero">
       <img v-if="destination.image" :src="destination.image" :alt="destination.name" />
+
+      <!-- ❤️ FAVORITO -->
+      <FavoriteButton
+        v-if="destination"
+        :destination="destination"
+        variant="floating"
+      />
+
       <div class="hero-overlay">
         <h1>{{ destination.name }}</h1>
         <p v-if="destination.municipio">
@@ -83,6 +91,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getDestinoBySlug } from '@/services/destinosService'
 import DestinationMap from '@/components/DestinationMap.vue'
+import FavoriteButton from '@/components/FavoriteButton.vue'
 
 defineOptions({ name: 'DestinationDetail' })
 

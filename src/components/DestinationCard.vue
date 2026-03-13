@@ -1,5 +1,5 @@
 <template>
-  <article class="destination-card" @click="onSelect">
+  <article :class="['destination-card', variant]" @click="onSelect">
     <div class="image-wrapper">
       <img :src="destination.image" :alt="destination.name" />
 
@@ -24,7 +24,11 @@
 import FavoriteButton from '@/components/FavoriteButton.vue'
 
 const props = defineProps({
-  destination: { type: Object, required: true }
+  destination: { type: Object, required: true },
+  variant: {
+    type: String,
+    default: 'grid'
+  }
 })
 
 const emit = defineEmits(['select'])
